@@ -43,6 +43,8 @@ See [action.yml](action.yml)
     format: ''
     # Filter files using a glob filter
     filter: '*'
+    # Write the output to files in the specified folder
+    output-dir: 'path/to/folder'
 ```
 
 ### Filtering
@@ -127,6 +129,28 @@ If those two globs were inverted, you **would** include all the YML files, with 
       echo "Do something with this ${removed_file}."
     done
 ```
+
+### Write output to files
+You can specify the `output-dir` to have the action write the changed files to the specified directory.
+Each of the normal outputs (all, renamed, removed, etc) will be written to a file with
+the same name as the output and the extension specified by `format` (space-delimited will use .txt).
+
+For example:
+
+```yaml
+- id: files
+  uses: Ana06/get-changed-files@v2.3.0
+  with:
+    format: 'json'
+    output-dir: 'outputs'
+```
+
+Will write the following files:
+- outputs/all.json
+- outputs/renamed.json
+- outputs/removed.json
+- ...
+
 
 ## Install, Build, Lint, Test, and Package
 

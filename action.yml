@@ -21,8 +21,13 @@ inputs:
     required: true
     default: space-delimited
   filter:
+    description: Filter files to include in the changes using a glob filter.
     required: true
     default: '*'
+  output-dir:
+    description: Write the changes to files in the specified directory.
+    required: false
+    default: ''
 outputs:
   all:
     description: >

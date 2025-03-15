@@ -121,3 +121,30 @@ jobs:
           echo 'steps.files-filtered.outputs.added_modified=${{ steps.files-filtered.outputs.added_modified }}'
           echo 'steps.files-filtered.outputs.added_modified_renamed=${{ steps.files-filtered.outputs.added_modified_renamed }}'
 
+      - id: files-written
+        name: Run the action and save to a file
+        uses: ./
+        with:
+          format: 'space-delimited'
+          output-dir: 'out'
+
+      - name: Check files written
+        run: |
+          if ! [ -d out ]; then
+            echo 'Directory not created'
+            exit 1
+          fi
+          ls out
+          
+          if ! [ -f out/all.txt ]; then
+            echo 'Output file not created'
+            exit 1
+          fi
+          
+          content=$(cat out/all.txt)
+          echo $content
+          
+          if [ "$content" != '${{ steps.files-written.outputs.all }}' ]; then
+            echo 'Written content does not match expected'
+            exit 1
+          fi

@@ -29,14 +29,17 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const minimatch_1 = __importDefault(__nccwpck_require__(3973));
+const fs = __importStar(__nccwpck_require__(3292));
+const path = __importStar(__nccwpck_require__(1017));
 function run() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Create GitHub client with the API token.
             const client = new github_1.GitHub(core.getInput('token', { required: true }));
             const format = core.getInput('format', { required: true });
             const filter = core.getMultilineInput('filter', { required: true }) || '*';
+            const writeFilesDir = core.getInput('output-dir', { required: false });
             // Ensure that the format parameter is set properly.
             if (format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
                 core.setFailed(`Format must be one of 'string-delimited', 'csv', or 'json', got '${format}'.`);
@@ -184,13 +187,34 @@ function run() {
             core.info(`Added or modified: ${addedModifiedFormatted}`);
             core.info(`Added, modified or renamed: ${addedModifiedRenamedFormatted}`);
             // Set step output context.
-            core.setOutput('all', allFormatted);
-            core.setOutput('added', addedFormatted);
-            core.setOutput('modified', modifiedFormatted);
-            core.setOutput('removed', removedFormatted);
-            core.setOutput('renamed', renamedFormatted);
-            core.setOutput('added_modified', addedModifiedFormatted);
-            core.setOutput('added_modified_renamed', addedModifiedRenamedFormatted);
+            const outputs = [
+                ['all', allFormatted],
+                ['added', addedFormatted],
+                ['modified', modifiedFormatted],
+                ['removed', removedFormatted],
+                ['renamed', renamedFormatted],
+                ['added_modified', addedModifiedFormatted],
+                ['added_modified_renamed', addedModifiedRenamedFormatted]
+            ];
+            for (const [name, content] of outputs) {
+                core.setOutput(name, content);
+            }
+            // Write to file
+            if (writeFilesDir !== '') {
+                // Create the folder if it doesn't exist
+                const dir = path.join((_e = process.env.GITHUB_WORKSPACE) !== null && _e !== void 0 ? _e : '', writeFilesDir);
+                yield fs.access(dir).catch(() => __awaiter(this, void 0, void 0, function* () {
+                    yield fs.mkdir(dir, { recursive: true });
+                }));
+                const ext = format === 'space-delimited' ? 'txt' : format;
+                const writes = [];
+                for (const [name, content] of outputs) {
+                    const file = path.join(dir, `${name}.${ext}`);
+                    writes.push(fs.writeFile(file, content, { flag: 'w+', encoding: 'utf-8' }));
+                }
+                yield Promise.all(writes);
+                core.info(`Output written to ${dir}`);
+            }
             // For backwards-compatibility
             core.setOutput('deleted', removedFormatted);
         }
@@ -28794,6 +28818,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 

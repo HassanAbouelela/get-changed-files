@@ -1,6 +1,8 @@
 import * as core from '@actions/core'
 import {context, GitHub} from '@actions/github'
 import minimatch from 'minimatch'
+import * as fs from 'fs/promises'
+import * as path from 'path'
 
 type Format = 'space-delimited' | 'csv' | 'json'
 type FileStatus = 'added' | 'modified' | 'removed' | 'renamed'
@@ -11,6 +13,7 @@ async function run(): Promise<void> {
     const client = new GitHub(core.getInput('token', {required: true}))
     const format = core.getInput('format', {required: true}) as Format
     const filter = core.getMultilineInput('filter', {required: true}) || '*'
+    const writeFilesDir = core.getInput('output-dir', {required: false})
 
     // Ensure that the format parameter is set properly.
     if (format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
@@ -196,13 +199,37 @@ async function run(): Promise<void> {
     core.info(`Added, modified or renamed: ${addedModifiedRenamedFormatted}`)
 
     // Set step output context.
-    core.setOutput('all', allFormatted)
-    core.setOutput('added', addedFormatted)
-    core.setOutput('modified', modifiedFormatted)
-    core.setOutput('removed', removedFormatted)
-    core.setOutput('renamed', renamedFormatted)
-    core.setOutput('added_modified', addedModifiedFormatted)
-    core.setOutput('added_modified_renamed', addedModifiedRenamedFormatted)
+    const outputs = [
+      ['all', allFormatted],
+      ['added', addedFormatted],
+      ['modified', modifiedFormatted],
+      ['removed', removedFormatted],
+      ['renamed', renamedFormatted],
+      ['added_modified', addedModifiedFormatted],
+      ['added_modified_renamed', addedModifiedRenamedFormatted]
+    ]
+
+    for (const [name, content] of outputs) {
+      core.setOutput(name, content)
+    }
+
+    // Write to file
+    if (writeFilesDir !== '') {
+      // Create the folder if it doesn't exist
+      const dir = path.join(process.env.GITHUB_WORKSPACE ?? '', writeFilesDir)
+      await fs.access(dir).catch(async () => {
+        await fs.mkdir(dir, {recursive: true})
+      })
+
+      const ext = format === 'space-delimited' ? 'txt' : format
+      const writes = []
+      for (const [name, content] of outputs) {
+        const file = path.join(dir, `${name}.${ext}`)
+        writes.push(fs.writeFile(file, content, {flag: 'w+', encoding: 'utf-8'}))
+      }
+      await Promise.all(writes)
+      core.info(`Output written to ${dir}`)
+    }
 
     // For backwards-compatibility
     core.setOutput('deleted', removedFormatted)
