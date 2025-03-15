@@ -16,6 +16,7 @@ This project is a fork of [jitterbit/get-changed-files](https://github.com/jitte
 - Considers renamed modified files as modified
 - Adds `added_modified_renamed` that includes renamed non-modified files and all files in `added_modified`
 - Removes node12 deprecation warnings
+- Supports writing output to file
 
 ---
 
@@ -27,6 +28,7 @@ This project is a fork of [jitterbit/get-changed-files](https://github.com/jitte
   - [Get all changed `*.yml` files but exclude `.github/*/*.yml` files](#get-all-changed-yml-files-but-exclude-githubyml-files)
   - [Get all added and modified files as CSV](#get-all-added-and-modified-files-as-csv)
   - [Get all removed files as JSON](#get-all-removed-files-as-json)
+  - [Write output to files](#write-output-to-files)
 - [Install, Build, Lint, Test, and Package](#install-build-lint-test-and-package)
 - [License](#license)
 
