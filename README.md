@@ -3,10 +3,13 @@
 [![CI status](https://github.com/Ana06/get-changed-files/workflows/Test/badge.svg)](https://github.com/Ana06/get-changed-files/actions?query=event%3Apush+branch%3Amain)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
 
-Get all changed/modified files in a pull request (`pull_request` or `pull_request_target`) or push's commits.
-You can choose to get all changed files, only added files, only modified files, only removed files, only renamed files, or all added and modified files.
+Get all changed/modified files in a pull request (`pull_request` or `pull_request_target`),
+push, or workflow dispatch commits.
+You can choose to get all changed files, only added files, only modified files, only removed files,
+only renamed files, or all added and modified files.
 These outputs are available via the `steps` output context.
-The `steps` output context exposes the output names `all`, `added`, `modified`, `removed`, `renamed`, and `added_modified` and `added_modified_renamed`.
+The `steps` output context exposes the output names `all`, `added`, `modified`,
+`removed`, `renamed`, and `added_modified` and `added_modified_renamed`.
 Renamed files that are also modified are included in `renamed`, `modified` and `added_modified`.
 
 This project is a fork of [jitterbit/get-changed-files](https://github.com/jitterbit/get-changed-files), which:
@@ -17,6 +20,7 @@ This project is a fork of [jitterbit/get-changed-files](https://github.com/jitte
 - Adds `added_modified_renamed` that includes renamed non-modified files and all files in `added_modified`
 - Removes node12 deprecation warnings
 - Supports writing output to file
+- Adds workflow dispatch support
 
 ---
 

@@ -7,6 +7,29 @@ import * as path from 'path'
 type Format = 'space-delimited' | 'csv' | 'json'
 type FileStatus = 'added' | 'modified' | 'removed' | 'renamed'
 
+async function getBaseCommit(head: string, client: GitHub): Promise<string> {
+  core.debug(`Fetching base commit for ${head}`)
+  const response = await client.repos.getCommit({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    ref: head
+  })
+
+  if (response.status !== 200) {
+    core.setFailed(
+      `The GitHub API for fetching commits for this ${context.eventName} event returned ${response.status}, expected 200. ` +
+        "Please submit an issue on this action's GitHub repo."
+    )
+  }
+
+  const parents = response.data.parents
+  if (parents.length === 0) {
+    core.setFailed(`No parents found for commit ${head}, nothing to compare against!`)
+  }
+
+  return parents[0].sha
+}
+
 async function run(): Promise<void> {
   try {
     // Create GitHub client with the API token.
@@ -40,9 +63,13 @@ async function run(): Promise<void> {
         base = context.payload.before
         head = context.payload.after
         break
+      case 'workflow_dispatch':
+        head = context.sha
+        base = await getBaseCommit(head, client)
+        break
       default:
         core.setFailed(
-          `This action only supports pull requests and pushes, ${context.eventName} events are not supported. ` +
+          `This action only supports pull requests, pushes, and workflow dispatch, ${context.eventName} events are not supported. ` +
             "Please submit an issue on this action's GitHub repo if you believe this in correct."
         )
     }
