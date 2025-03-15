@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
 
 jobs:
   debug:
@@ -120,4 +122,3 @@ jobs:
           echo 'steps.files-filtered.outputs.renamed=${{ steps.files-filtered.outputs.renamed }}'
           echo 'steps.files-filtered.outputs.added_modified=${{ steps.files-filtered.outputs.added_modified }}'
           echo 'steps.files-filtered.outputs.added_modified_renamed=${{ steps.files-filtered.outputs.added_modified_renamed }}'
-
