@@ -29,6 +29,25 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const minimatch_1 = __importDefault(__nccwpck_require__(3973));
+function getBaseCommit(head, client) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Fetching base commit for ${head}`);
+        const response = yield client.repos.getCommit({
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            sha: head
+        });
+        if (response.status !== 200) {
+            core.setFailed(`The GitHub API for fetching commits for this ${github_1.context.eventName} event returned ${response.status}, expected 200. ` +
+                "Please submit an issue on this action's GitHub repo.");
+        }
+        const parents = response.data.parents;
+        if (parents.length === 0) {
+            core.setFailed(`No parents found for commit ${head}, nothing to compare against!`);
+        }
+        return parents[0].sha;
+    });
+}
 function run() {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
@@ -58,8 +77,12 @@ function run() {
                     base = github_1.context.payload.before;
                     head = github_1.context.payload.after;
                     break;
+                case 'workflow_dispatch':
+                    head = github_1.context.sha;
+                    base = yield getBaseCommit(head, client);
+                    break;
                 default:
-                    core.setFailed(`This action only supports pull requests and pushes, ${github_1.context.eventName} events are not supported. ` +
+                    core.setFailed(`This action only supports pull requests, pushes, and workflow dispatch, ${github_1.context.eventName} events are not supported. ` +
                         "Please submit an issue on this action's GitHub repo if you believe this in correct.");
             }
             // Log the base and head commits
